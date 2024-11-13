@@ -41,26 +41,33 @@ highestValueInShare = 0.0
 # for month in storagePerBussinessmonth:
 #     print(month)
 
+monthlyHighestValuesPerYear = []
+for month in range(numberOfMonthsInABusinessYear):
+    monthlyHighestValuesPerYear.append([])
+
+print(f"storagePerBussinesMonth: {storagePerBussinessmonth}")
+
 for i, month in enumerate(storagePerBussinessmonth):
     for j in reversed(range(checkHowManyPastYears)):
         if float(month[i][3]) > float(highestValueInShare):
             highestValueInShare = month[j][3]
+            monthlyHighestValuesPerYear[i].append({month[i][3], str(month[i][0])[:7]})
 
-print(highestValueInShare)
-
-
-
+print(monthlyHighestValuesPerYear)
 
 
 
 
 
 
-df = pd.DataFrame({
-   'x_axis': range(1, 12),
+
+
+
+# df = pd.DataFrame({
+#    'x_axis': range(1, 12),
 #    'y_axis': range(1, math.ceil(float(highestValueInShare)))
-})
+# })
 
-# plot
-plt.plot('x_axis', 'y_axis', data=df, linestyle='-', marker='o')
-plt.show()
+# # plot
+# plt.plot('x_axis', 'y_axis', data=df, linestyle='-', marker='o')
+# plt.show()
