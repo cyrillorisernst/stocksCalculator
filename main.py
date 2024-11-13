@@ -4,70 +4,82 @@ import pandas as pd
 import csv
 import math
 
+#source of data: https://stooq.com/q/d/?s=uan.us&i=m&d1=20120101&d2=20240402&l=3
+
+howManyYearsBack = 5
+fileName = 'uan_us_m.csv'
+
 #open file and store everything but the first row
-with open('uan_us_m.csv', 'r') as file:
-    reader = csv.reader(file)
+def getDataFromCSV(fileName):
+    with open(fileName, 'r') as file:
+        reader = csv.reader(file)
 
 
-    data=[]
+        data=[]
 
-    for i, row in enumerate(reader):
-        if i > 0:
-            data.append(row)
+        for i, row in enumerate(reader):
+            if i > 0:
+                data.append(row)
+    return data
 
-
-#sort by months of the year
-numberOfMonthsInABusinessYear = 12
-storagePerBussinessmonth = []
-
-for months in range(numberOfMonthsInABusinessYear):
-    storagePerBussinessmonth.append([])
-
-currentYear = "0000"
-yearCounter = 0
-for i, row in enumerate(data):
-    if str(row[0])[:4] != currentYear:
-        currentYear = str(row[0])[:4]
-        yearCounter = 0
-    storagePerBussinessmonth[yearCounter].append(row)
-    yearCounter = yearCounter + 1
+def calculateLastYearsHighs(checkHowManyPastYears, data):
+    #sort by months of the year
+    numberOfMonthsInABusinessYear = 12
 
 
+    storagePerBussinessmonth = []
 
-checkHowManyPastYears = 3
+    for months in range(numberOfMonthsInABusinessYear):
+        storagePerBussinessmonth.append([])
 
-highestValueInShare = 0.0
+    currentYear = "0000"
+    yearCounter = 0
+    numberOfYearsTotal = 0
 
-# for month in storagePerBussinessmonth:
-#     print(month)
+    for i, row in enumerate(data):
+        if str(row[0])[:4] != currentYear:
+            numberOfYearsTotal+=1
+            currentYear = str(row[0])[:4]
+            yearCounter = 0
+        storagePerBussinessmonth[yearCounter].append(row)
+        yearCounter = yearCounter + 1
 
-monthlyHighestValuesPerYear = []
-for month in range(numberOfMonthsInABusinessYear):
-    monthlyHighestValuesPerYear.append([])
+    print(numberOfYearsTotal)
 
-print(f"storagePerBussinesMonth: {storagePerBussinessmonth}")
+    monthlyHighestValuesPerYear = []
+    for i, month in enumerate(range(numberOfMonthsInABusinessYear)):
+        monthlyHighestValuesPerYear.append(0.0)
+    print(storagePerBussinessmonth[i][0][0])
+    print(monthlyHighestValuesPerYear)
 
-for i, month in enumerate(storagePerBussinessmonth):
-    for j in reversed(range(checkHowManyPastYears)):
-        if float(month[i][3]) > float(highestValueInShare):
-            highestValueInShare = month[j][3]
-            monthlyHighestValuesPerYear[i].append({month[i][3], str(month[i][0])[:7]})
+    for i, month in enumerate(reversed(storagePerBussinessmonth)):
+        for j in range(checkHowManyPastYears):
+            monthlyHighestValuesPerYear[i] = float(monthlyHighestValuesPerYear[i]) + float(month[numberOfYearsTotal-1-j][2])
+        monthlyHighestValuesPerYear[i] = float(monthlyHighestValuesPerYear[i]) / checkHowManyPastYears
 
-print(monthlyHighestValuesPerYear)
-
-
-
+    monthlyHighestValuesPerYear = monthlyHighestValuesPerYear[::-1]
 
 
+    print(monthlyHighestValuesPerYear)
+
+    return monthlyHighestValuesPerYear
+
+
+def showMonthBasedGraph(monthlyHighestValuesPerYear, howManyYearsBack):
+    df = pd.DataFrame({
+    'x_axis': range(12),
+    'y_axis': monthlyHighestValuesPerYear
+    })
 
 
 
+    # plot
+    plt.plot('x_axis', 'y_axis', data=df, linestyle='-', marker='x')
+    plt.title(f"Durchschnitt pro Monat über die letzten {howManyYearsBack} Jahre")
+    plt.xlabel("Monat")
+    plt.ylabel("Wert in €")
+    plt.xticks(np.arange(0, 12, 1))
+    plt.yticks(np.arange(0, 200, 10))
+    plt.show()
 
-# df = pd.DataFrame({
-#    'x_axis': range(1, 12),
-#    'y_axis': range(1, math.ceil(float(highestValueInShare)))
-# })
-
-# # plot
-# plt.plot('x_axis', 'y_axis', data=df, linestyle='-', marker='o')
-# plt.show()
+showMonthBasedGraph(calculateLastYearsHighs(howManyYearsBack, getDataFromCSV(fileName)), howManyYearsBack)
